@@ -1,4 +1,4 @@
-import getpass
+# import getpass
 import os
 from dotenv import load_dotenv
 import chainlit as cl
@@ -26,15 +26,17 @@ from langgraph.graph import END, StateGraph
 # Load environment variables from .env file
 load_dotenv()
 
-def _set_if_undefined(var: str):
-    if not os.environ.get(var):
-        os.environ[var] = getpass.getpass(f"Please provide your {var}: ")
+# def _set_if_undefined(var: str):
+#     if not os.environ.get(var):
+#         os.environ[var] = getpass.getpass(f"Please provide your {var}: ")
 
-# _set_if_undefined("OPENAI_API_KEY")
-_set_if_undefined("LANGCHAIN_API_KEY")
-_set_if_undefined("TAVILY_API_KEY")
+# # _set_if_undefined("OPENAI_API_KEY")
+# _set_if_undefined("LANGCHAIN_API_KEY")
+# _set_if_undefined("TAVILY_API_KEY")
 
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 # Optional, add tracing in LangSmith
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
@@ -44,7 +46,6 @@ tavily_tool = TavilySearchResults(max_results=5)
 
 # This executes code locally, which can be unsafe
 python_repl_tool = PythonREPLTool()
-
 
 def create_agent(llm: ChatOpenAI, tools: list, system_prompt: str):
     # Each worker node will be given a name and some tools.
