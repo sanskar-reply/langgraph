@@ -26,14 +26,6 @@ from langgraph.graph import END, StateGraph
 # Load environment variables from .env file
 load_dotenv()
 
-# def _set_if_undefined(var: str):
-#     if not os.environ.get(var):
-#         os.environ[var] = getpass.getpass(f"Please provide your {var}: ")
-
-# # _set_if_undefined("OPENAI_API_KEY")
-# _set_if_undefined("LANGCHAIN_API_KEY")
-# _set_if_undefined("TAVILY_API_KEY")
-
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
