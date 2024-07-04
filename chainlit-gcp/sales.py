@@ -34,6 +34,7 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "Multi-agent Collaboration")
 
+# custome defining tools 
 tavily_tool = TavilySearchResults(max_results=5)
 
 # This executes code locally, which can be unsafe
@@ -59,13 +60,20 @@ def agent_node(state, agent, name):
     result = agent.invoke(state)
     return {"messages": [HumanMessage(content=result["output"], name=name)]}
 
-members = ["Researcher", "Coder"]
+# members = ["Researcher", "Coder"]
+members = ["Introduction", "MarketResearch", "DomainResearch", "FinanceResearch"]
+# system_prompt = (
+#     "You are a supervisor tasked with managing a conversation between the"
+#     " following workers:  {members}. Given the following user request,"
+#     " respond with the worker to act next. Each worker will perform a"
+#     " task and respond with their results and status. When finished,"
+#     " respond with FINISH."
+# )
 system_prompt = (
-    "You are a supervisor tasked with managing a conversation between the"
-    " following workers:  {members}. Given the following user request,"
-    " respond with the worker to act next. Each worker will perform a"
-    " task and respond with their results and status. When finished,"
-    " respond with FINISH."
+    '''
+        You are a sales agent, your task is to run the following workers: {members} for the company name entered and return a summarised response.
+        This is for research purposes so align to that and respond with the summary followed by FINISH. 
+    '''
 )
 # Our team supervisor is an LLM node. It just picks the next agent to process
 # and decides when the work is completed
@@ -100,8 +108,10 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(options=str(options), members=", ".join(members))
 
+# initialise the model
 llm = ChatOpenAI(model="gpt-4-1106-preview")
 
+# chain the 
 supervisor_chain = (
     prompt
     | llm.bind_functions(functions=[function_def], function_call="route")
@@ -116,21 +126,37 @@ class AgentState(TypedDict):
     # The 'next' field indicates where to route to next
     next: str
 
+# defining the agents and their nodes
+# research agent
+finance_researcher = create_agent(llm, [tavily_tool], "You are a Finance researcher. Return a 50 words result on the financials of the company for the last 10 years")
+finance_node = functools.partial(agent_node, agent=finance_researcher, name="Researcher")
+domain_researcher = create_agent(llm, [tavily_tool], "You are a Domain researcher. Return a 50 words result on the Domain experience of the company for the last 10 years")
+domain_node = functools.partial(agent_node, agent=domain_researcher, name="Researcher")
+marker_researcher = create_agent(llm, [tavily_tool], "You are a Market researcher. Return a 50 words result on the Market experience/share of the company for the last 10 years")
+maerket_node = functools.partial(agent_node, agent=marker_researcher, name="Researcher")
+Summariser = create_agent(llm, [tavily_tool], "You are a summariser. ")
+summariser_node = functools.partial(agent_node, agent=Summariser, name="Researcher")
 
-research_agent = create_agent(llm, [tavily_tool], "You are a web researcher.")
-research_node = functools.partial(agent_node, agent=research_agent, name="Researcher")
-
+# code agent
 # NOTE: THIS PERFORMS ARBITRARY CODE EXECUTION. PROCEED WITH CAUTION
-code_agent = create_agent(
-    llm,
-    [python_repl_tool],
-    "You may generate safe python code to analyze data and generate charts using matplotlib.",
-)
-code_node = functools.partial(agent_node, agent=code_agent, name="Coder")
+# code_agent = create_agent(
+#     llm,
+#     [python_repl_tool],
+#     "You may generate safe python code to analyze data and generate charts using matplotlib.",
+# )
+# code_node = functools.partial(agent_node, agent=code_agent, name="Coder")
 
+# market research agent 
+
+
+# add nodes to the workflows 
 workflow = StateGraph(AgentState)
-workflow.add_node("Researcher", research_node)
-workflow.add_node("Coder", code_node)
+# workflow.add_node("Researcher", research_node)
+# workflow.add_node("Coder", code_node)
+workflow.add_node("MarketResearch", maerket_node)
+workflow.add_node("DomainResearch", domain_node)
+workflow.add_node("FinanceResearch", finance_node)
+workflow.add_node("Introduction", Summariser)
 workflow.add_node("supervisor", supervisor_chain)
 
 for member in members:
