@@ -192,3 +192,11 @@ async def run_convo(message: cl.Message):
         )]))
 
     await cl.Message(content=res["messages"][-1].content).send()
+
+
+# TODO: 
+# convert the summariser agnet into a tool, remove tavily and make it available to all agents
+# Change the way tools are initiated
+# Compile the graph into an image to show the lofic flow
+# Add multiple llms in there to switch between
+# Enahnced system prompt 
