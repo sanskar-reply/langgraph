@@ -200,3 +200,4 @@ async def run_convo(message: cl.Message):
 # Compile the graph into an image to show the lofic flow
 # Add multiple llms in there to switch between
 # Enahnced system prompt 
+# Switch tavily with google search
