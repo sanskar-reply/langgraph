@@ -123,15 +123,21 @@ class AgentState(TypedDict):
     next: str
 
 # defining the agents and their nodes
-# research agent
+# finance research ag ent
 finance_researcher = create_agent(llm, [tavily_tool], "You are a Finance researcher. Return a 50 words result on the financials of the company for the last 10 years")
-finance_node = functools.partial(agent_node, agent=finance_researcher, name="Researcher")
+finance_node = functools.partial(agent_node, agent=finance_researcher, name="FinanceResearcher")
+
+# domain expert agent 
 domain_researcher = create_agent(llm, [tavily_tool], "You are a Domain researcher. Return a 50 words result on the Domain experience of the company for the last 10 years")
-domain_node = functools.partial(agent_node, agent=domain_researcher, name="Researcher")
-marker_researcher = create_agent(llm, [tavily_tool], "You are a Market researcher. Return a 50 words result on the Market experience/share of the company for the last 10 years")
-maerket_node = functools.partial(agent_node, agent=marker_researcher, name="Researcher")
+domain_node = functools.partial(agent_node, agent=domain_researcher, name="DomainAnalyser")
+
+# market research agent
+market_researcher = create_agent(llm, [tavily_tool], "You are a Market researcher. Return a 50 words result on the Market experience/share of the company for the last 10 years")
+market_node = functools.partial(agent_node, agent=market_researcher, name="MarketResearcher")
+
+# summariser tool (turn it into a tool instead of an agent that is available to all agents)
 Summariser = create_agent(llm, [tavily_tool], "You are a summariser. ")
-summariser_node = functools.partial(agent_node, agent=Summariser, name="Researcher")
+summariser_node = functools.partial(agent_node, agent=Summariser, name="Summariser")
 
 # code agent
 # NOTE: THIS PERFORMS ARBITRARY CODE EXECUTION. PROCEED WITH CAUTION
@@ -149,7 +155,7 @@ summariser_node = functools.partial(agent_node, agent=Summariser, name="Research
 workflow = StateGraph(AgentState)
 # workflow.add_node("Researcher", research_node)
 # workflow.add_node("Coder", code_node)
-workflow.add_node("MarketResearch", maerket_node)
+workflow.add_node("MarketResearch", market_node)
 workflow.add_node("DomainResearch", domain_node)
 workflow.add_node("FinanceResearch", finance_node)
 workflow.add_node("Introduction", Summariser)
@@ -167,6 +173,9 @@ workflow.add_conditional_edges("supervisor", lambda x: x["next"], conditional_ma
 workflow.set_entry_point("supervisor")
 
 graph = workflow.compile()
+# from IPython.display import Image, display
+
+# display(Image(graph.get_graph().draw_mermaid_png()))
 from langchain_core.runnables import RunnableConfig
 
 @cl.on_message
