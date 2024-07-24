@@ -1,4 +1,3 @@
-# import getpass
 import os
 from dotenv import load_dotenv
 import chainlit as cl
@@ -19,8 +18,6 @@ import functools
 import operator
 from typing import Sequence, TypedDict
 
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
 from langgraph.graph import END, StateGraph
 
 # Load environment variables from .env file
@@ -36,7 +33,6 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "Multi-agent Co
 
 # custome defining tools 
 tavily_tool = TavilySearchResults(max_results=5)
-
 # This executes code locally, which can be unsafe
 python_repl_tool = PythonREPLTool()
 
