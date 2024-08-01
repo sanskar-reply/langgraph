@@ -10,6 +10,7 @@ from langchain_experimental.tools import PythonREPLTool
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_openai import ChatOpenAI
+from langchain_google_vertexai import ChatVertexAI
 
 from langchain_core.output_parsers.openai_functions import JsonOutputFunctionsParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -105,7 +106,8 @@ prompt = ChatPromptTemplate.from_messages(
 ).partial(options=str(options), members=", ".join(members))
 
 # initialise the model
-llm = ChatOpenAI(model="gpt-4-1106-preview")
+# llm = ChatOpenAI(model="gpt-4-1106-preview")
+llm = ChatOpenAI(model_name="gemini-1.5-flash-001", max_tokens=8192, stop=None)
 
 # chain the 
 supervisor_chain = (
